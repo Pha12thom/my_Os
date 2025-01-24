@@ -1,43 +1,76 @@
-# Toolchain settings
+# Compiler settings
+CC = gcc
 AS = nasm
 LD = ld
-QEMU = qemu-system-x86_64
+CFLAGS = -ffreestanding -nostdlib -nostartfiles -O2 -Wall
+LDFLAGS = -T linker.ld -ffreestanding -O2
 
-# Directories and files
+# Directories
 SRC_DIR = src
-OBJ_DIR = build/obj
-BIN_DIR = build
-BOOT_BIN = $(BIN_DIR)/boot.bin
-OS_IMG = $(BIN_DIR)/os.img
+BUILD_DIR = build
+OBJ_DIR = $(BUILD_DIR)/obj
+BIN_DIR = $(BUILD_DIR)/bin
+IMG_DIR = $(BUILD_DIR)/img
+TOOLS_DIR = tools
+TEST_DIR = tests
 
-# Source files
-BOOT_SRC = $(SRC_DIR)/boot/boot.asm
+# Files
+BOOT_ASM = $(SRC_DIR)/boot/boot.asm
+BOOT_BIN = $(BIN_DIR)/boot.bin
+OS_IMG = $(IMG_DIR)/os.img
+KERNEL_C = $(SRC_DIR)/kernel/kernel.c
+KERNEL_OBJ = $(OBJ_DIR)/kernel.o
+KERNEL_BIN = $(BIN_DIR)/kernel.bin
+GDT_FLUSH_ASM = src/boot/gdt_flush.asm
+IDT_FLUSH_ASM = src/boot/idt_flush.asm
+LINKER_SCRIPT = linker.ld
+
+# Make the directories
+$(shell mkdir -p $(OBJ_DIR) $(BIN_DIR) $(IMG_DIR) $(BUILD_DIR)/logs)
 
 # Default target
-all: $(BOOT_BIN)
+all: $(OS_IMG)
 
-# Rule to assemble the bootloader
-$(BOOT_BIN): $(BOOT_SRC)
+# Compile bootloader
+$(BOOT_BIN): $(BOOT_ASM)
 	@echo "Assembling bootloader..."
-	$(AS) -f elf32 $(SRC_DIR)/boot/boot.asm -o $(OBJ_DIR)/boot.o
-	$(LD) -melf_i386 -o $(BOOT_BIN) $(OBJ_DIR)/boot.o
+	$(AS) -f bin $(BOOT_ASM) -o $(BOOT_BIN)
 
-# Rule to create a 1GB OS image
-$(OS_IMG): $(BOOT_BIN)
-	@echo "Creating 1GB OS image..."
+# Compile kernel
+$(KERNEL_OBJ): $(KERNEL_C)
+	@echo "Compiling kernel..."
+	$(CC) $(CFLAGS) -c $(KERNEL_C) -o $(KERNEL_OBJ)
+
+# Link the kernel
+$(KERNEL_BIN): $(KERNEL_OBJ)
+	@echo "Linking kernel..."
+	$(LD) $(LDFLAGS) -o $(KERNEL_BIN) $(KERNEL_OBJ) -m elf_i386
+
+# Build the final OS image
+$(OS_IMG): $(BOOT_BIN) $(KERNEL_BIN)
+	@echo "Building OS image..."
+	# Create empty image file of 200MB (change size as needed)
+	dd if=/dev/zero of=$(OS_IMG) bs=1M seek=2 count=200
+	# Copy bootloader to the start of the image
 	dd if=$(BOOT_BIN) of=$(OS_IMG) bs=512 seek=4
-	dd if=/dev/zero of=$(OS_IMG) bs=1M seek=2 count=1024
+	# Copy the kernel to the image
+	dd if=$(KERNEL_BIN) of=$(OS_IMG) bs=512 seek=200
 
-# Clean the build directory
+# Clean up build files
 clean:
-	@echo "Cleaning build directory..."
-	rm -rf $(OBJ_DIR)/* $(BIN_DIR)/*
+	@echo "Cleaning up..."
+	rm -rf $(BUILD_DIR)
 
-# Run the OS in QEMU
+# Test running QEMU
 run: $(OS_IMG)
 	@echo "Running OS in QEMU..."
-	$(QEMU) -drive file=$(OS_IMG),format=raw
+	qemu-system-x86_64 -drive format=raw,file=$(OS_IMG)
 
-# Phony targets
-.PHONY: all clean run
+# Debugging (optional)
+debug: $(OS_IMG)
+	@echo "Running OS in QEMU with debugging enabled..."
+	qemu-system-x86_64 -drive format=raw,file=$(OS_IMG) -s -S
+
+# Rebuild everything
+rebuild: clean all
 
