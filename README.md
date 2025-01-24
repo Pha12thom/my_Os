@@ -14,7 +14,8 @@ my_os/
 ├── src/                      # Source code
 │   ├── boot/                 # Bootloader code
 │   │   ├── boot.asm          # Assembly code for bootloader
-│   │   ├── stage2.asm        # Second-stage bootloader (if needed)
+|   |   ├── gdt_flush.asm
+|   |   ├── idt_flush.asm
 │   ├── kernel/               # Kernel code
 │   │   ├── kernel.c          # Main kernel logic
 │   │   ├── kernel.h          # Kernel headers
