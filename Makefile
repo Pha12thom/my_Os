@@ -36,7 +36,7 @@ all: $(OS_IMG)
 $(OS_IMG): $(BOOT_BIN) $(KERNEL_BIN)
 	@echo "Creating OS image..."
 	cat $(BOOT_BIN) $(KERNEL_BIN) > $(OS_IMG)
-	dd if=/dev/zero bs=1M count=200 >> $(OS_IMG)
+	dd if=/dev/zero bs=1M count=30 >> $(OS_IMG)
 
 # Assemble the bootloader
 $(BOOT_BIN): $(BOOT_SRC)
