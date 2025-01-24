@@ -6,6 +6,8 @@
 This is a simple operating system developed from scratch. The project aims to provide an in-depth understanding of OS development, from the bootloader to the kernel and device drivers. Written in **C**, the OS features a bootloader, kernel logic, device drivers, memory management, and more.
 
 ## Project Structure
+
+```
 my_os/
 ├── docs/                         # Documentation
 │   └── design.md                 # OS design and architecture notes
@@ -58,7 +60,7 @@ my_os/
 │   └── integration/              # Integration tests
 ├── Makefile                      # Build automation
 └── README.md                     # Project overview and instructions
-
+```
 
 ### **Project Overview**
 
