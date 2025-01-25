@@ -10,29 +10,50 @@ MEMORY
 
 SECTIONS
 {
-    . = 0x100000; /* Start at 1MB */
+    /* Set the starting address of the binary */
+    . = 0x100000;
 
-    .text : 
+    /* Code Section */
+    .text :
     {
-        *(.text)
+        _start = .;                /* Entry point */
+        *(.text)                   /* All .text sections */
+        *(.text.*)                 /* All .text.* sections */
     } >CODE
 
+    /* Read-Only Data Section */
     .rodata :
     {
-        *(.rodata*)
+        *(.rodata)                 /* All .rodata sections */
+        *(.rodata.*)               /* All .rodata.* sections */
     } >RO
 
+    /* Data Section */
     .data :
     {
-        *(.data)
+        *(.data)                   /* All .data sections */
+        *(.data.*)                 /* All .data.* sections */
     } >DATA
 
+    /* BSS Section */
     .bss :
     {
-        __bss_start = .;
-        *(.bss)
-        *(COMMON)
-        __bss_end = .;
+        __bss_start = .;           /* Start of BSS */
+        *(.bss)                    /* All .bss sections */
+        *(COMMON)                  /* COMMON symbols */
+        __bss_end = .;             /* End of BSS */
     } >BSS
+
+    /* Optional Bitmap Section for Memory Manager */
+    .bitmap ALIGN(0x1000) :
+    {
+        *(.bitmap)                 /* All .bitmap sections */
+    } >DATA
+
+    /* Stack Section (optional, if needed) */
+    .stack ALIGN(0x1000) :
+    {
+        *(.stack)
+    } >DATA
 }
 
