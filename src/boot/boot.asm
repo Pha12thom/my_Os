@@ -15,6 +15,22 @@ start:
     int 0x10
     mov al, ' '
     int 0x10
+    mov al, 'M'
+    int 0x10
+    mov al, 'I'
+    int 0x10
+    mov al, 'l'
+    int 0x10
+    mov al, 'L'
+    int 0x10
+    mov al, 'U'
+    int 0x10
+    mov al, 'G'
+    int 0x10
+    mov al, 'O'
+    int 0x10
+    mov al, ' '
+    int 0x10
     mov al, 'O'
     int 0x10
     mov al, 'S'
